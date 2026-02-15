@@ -1,10 +1,7 @@
+import TaskContainer from "@/features/task";
 
 const TaskPage = () => {
-  return (
-    <div>
-      Task
-    </div>
-  )
-}
+  return <TaskContainer />;
+};
 
-export default TaskPage
+export default TaskPage;
