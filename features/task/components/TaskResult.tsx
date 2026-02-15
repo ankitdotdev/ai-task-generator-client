@@ -70,7 +70,7 @@ export const TaskResult = ({ specId }: Props) => {
    * taskData → cached spec data
    * fetchSpecById → API call fallback
    */
-  const { taskData, fetchSpecById } = useSpecsStore();
+  const { taskData, fetchSpecById, updateTask } = useSpecsStore();
 
   /**
    * Local state holds normalized spec output
@@ -108,7 +108,7 @@ export const TaskResult = ({ specId }: Props) => {
      *
      * Prevents unnecessary API calls
      */
-    if (taskData && taskData.specInputId === specId) {
+    if (taskData) {
       setData(normalizeSpecOutput(taskData.output));
 
       setLoading(false);
@@ -165,10 +165,17 @@ export const TaskResult = ({ specId }: Props) => {
    *
    * TODO: Connect update API here later
    */
-  const handleSave = () => {
-    toast.success("Task updated successfully");
+  const handleSave = async () => {
+    const result = await updateTask(specId, data);
 
-    setIsEditing(false);
+    if (result.success) {
+      toast.success("Task updated successfully");
+      setIsEditing(false);
+      return;
+    } else {
+      toast.error("Failed to update");
+      return;
+    }
   };
 
   return (

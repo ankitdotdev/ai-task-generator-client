@@ -8,7 +8,6 @@ import { TaskReview } from "./components/TaskReview";
 import { TaskSidebar } from "./components/TaskSidebar";
 import { TaskMainLayout } from "./components/TaskMainLayout";
 import { TaskGenerating } from "./components/TaskGenerating";
-import { SIDEBAR_TASKS } from "./constants/sidebarTasks";
 import { useRouter } from "next/navigation";
 import { useSpecsStore } from "@/zustand/store/specs/specStore";
 import toast from "react-hot-toast";
@@ -100,7 +99,7 @@ const TaskContainer = () => {
       text-white
     "
     >
-      <TaskSidebar tasks={SIDEBAR_TASKS} />
+      <TaskSidebar />
 
       <TaskMainLayout>{renderView()}</TaskMainLayout>
     </div>

@@ -22,6 +22,11 @@ interface SpecsActions {
   fetchSpecById: (id: string) => Promise<AISpecOutput | null>;
 
   fetchSpecList: () => Promise<void>;
+
+  updateTask: (id: string, inputData: AISpecOutput["output"]) => Promise<{
+    success: boolean;
+    message: string;
+}>
 }
 
 export const useSpecsStore = create<SpecsState & SpecsActions>((set) => ({
@@ -99,6 +104,64 @@ export const useSpecsStore = create<SpecsState & SpecsActions>((set) => ({
       return {
         success: false,
         specId: null,
+        message: error?.message || "Something went wrong",
+      };
+    }
+  },
+
+  updateTask: async (
+    id: string,
+    inputData: AISpecOutput["output"],
+  ): Promise<{
+    success: boolean;
+    message: string;
+  }> => {
+    try {
+      console.log(inputData)
+      const response = await fetchService({
+        method: "PATCH",
+        endpoint: `/specs/${id}`,
+        data: inputData,
+        auth: true,
+      });
+
+      const result = response.data;
+      console.log(result);
+      // SUCCESS
+      if (response.code === 200) {
+        return {
+          success: true,
+          message: result.message || "Task updated successfully",
+        };
+      }
+
+      // UNAUTHORIZED
+      if (response.code === 401) {
+        localStorage.clear();
+        window.location.href = "/";
+        return {
+          success: false,
+          message: "Unauthorized. Please login again.",
+        };
+      }
+
+      // OTHER ERRORS
+      return {
+        success: false,
+        message: result.message || "Failed to generate task",
+      };
+    } catch (error: any) {
+      // NETWORK / SERVER FAILURE
+
+      if (error?.status === 401) {
+        return {
+          success: false,
+          message: "Session expired. Please login again.",
+        };
+      }
+
+      return {
+        success: false,
         message: error?.message || "Something went wrong",
       };
     }
