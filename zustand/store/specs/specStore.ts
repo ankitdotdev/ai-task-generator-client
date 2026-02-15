@@ -8,6 +8,8 @@ import { create } from "zustand";
 
 interface SpecsState {
   taskData: AISpecOutput | null;
+
+  specList: { _id: string; title: string }[];
 }
 
 interface SpecsActions {
@@ -18,9 +20,16 @@ interface SpecsActions {
   }>;
 
   fetchSpecById: (id: string) => Promise<AISpecOutput | null>;
+
+  fetchSpecList: () => Promise<void>;
 }
 
 export const useSpecsStore = create<SpecsState & SpecsActions>((set) => ({
+  specList: [],
+
+  setSpecList: (list: { _id: string; title: string }[]) =>
+    set({ specList: list }),
+
   taskData: null,
 
   setTaskData: (task: AISpecOutput) => set({ taskData: task }),
@@ -90,7 +99,6 @@ export const useSpecsStore = create<SpecsState & SpecsActions>((set) => ({
       return {
         success: false,
         specId: null,
-
         message: error?.message || "Something went wrong",
       };
     }
@@ -112,6 +120,8 @@ export const useSpecsStore = create<SpecsState & SpecsActions>((set) => ({
 
       // Unauthorized
       if (response.code === 401) {
+        localStorage.clear();
+        window.location.href = "/";
         console.warn("Unauthorized access to spec");
 
         return null;
@@ -125,6 +135,37 @@ export const useSpecsStore = create<SpecsState & SpecsActions>((set) => ({
       console.error("Spec fetch error:", error.message);
 
       return null;
+    }
+  },
+
+  fetchSpecList: async (): Promise<void> => {
+    try {
+      const response = await fetchService({
+        method: "GET",
+        endpoint: `/specs/`,
+        auth: true,
+      });
+
+      const result = response.data.data;
+      // Success
+      if (response.code === 200) {
+        set({ specList: result });
+      }
+
+      // Unauthorized
+      if (response.code === 401) {
+        localStorage.clear();
+        window.location.href = "/";
+        console.warn("Unauthorized access to spec");
+        set({ specList: [] });
+      }
+
+      // Other API errors
+      console.warn("Failed to fetch spec:", response.data?.message);
+    } catch (error: any) {
+      set({ specList: [] });
+
+      console.error("Spec fetch error:", error.message);
     }
   },
 }));

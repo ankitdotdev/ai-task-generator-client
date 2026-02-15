@@ -1,40 +1,74 @@
 "use client";
 
+import { useSpecsStore } from "@/zustand/store/specs/specStore";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
-interface TaskItem {
-  id: string;
-  title: string;
-}
-
-interface Props {
-  tasks: TaskItem[];
-}
-
-export const TaskSidebar = ({ tasks }: Props) => {
-
+/**
+ * Sidebar displays list of generated specs.
+ *
+ * Data source:
+ * Zustand store → specList
+ *
+ * API returns MongoDB _id
+ * We map:
+ *
+ * _id → id (for frontend routing)
+ */
+export const TaskSidebar = () => {
   const router = useRouter();
 
+  /**
+   * Zustand store state and actions
+   */
+  const { specList, fetchSpecList } = useSpecsStore();
+
+  /**
+   * Navigate to create new task page
+   */
   const handleNewTask = () => {
     router.push("/task");
   };
 
+  /**
+   * Navigate to specific spec result page
+   *
+   * Uses outputId (MongoDB _id)
+   */
   const handleTaskClick = (id: string) => {
     router.push(`/task/${id}`);
   };
 
-  return (
-    <div className="w-64 bg-[#202123] flex flex-col">
+  /**
+   * Fetch spec history when sidebar loads
+   */
+  useEffect(() => {
+    async function fetchList() {
+      await fetchSpecList();
+    }
+    fetchList();
+  }, []);
 
-      {/* New Task */}
+  return (
+    <div
+      className="
+      w-64
+      bg-[#202123]
+      flex
+      flex-col
+    "
+    >
+      {/* New Task Button */}
       <div className="p-3">
         <button
           onClick={handleNewTask}
           className="
             w-full
-            border border-gray-600
+            border
+            border-gray-600
             rounded-md
-            px-3 py-2
+            px-3
+            py-2
             hover:bg-gray-700
           "
         >
@@ -42,49 +76,77 @@ export const TaskSidebar = ({ tasks }: Props) => {
         </button>
       </div>
 
-      {/* History */}
-      <div className="flex-1 overflow-y-auto px-3">
-
-        <div className="text-sm text-gray-400 mb-2">
+      {/* History List */}
+      <div
+        className="
+        flex-1
+        overflow-y-auto
+        px-3
+      "
+      >
+        <div
+          className="
+          text-sm
+          text-gray-400
+          mb-2
+        "
+        >
           History
         </div>
 
-        {tasks.length === 0 && (
-          <div className="text-sm text-gray-500">
+        {/* Empty state */}
+        {(!specList || specList.length === 0) && (
+          <div
+            className="
+            text-sm
+            text-gray-500
+          "
+          >
             No tasks yet
           </div>
         )}
 
-        {tasks.map(task => (
+        {/* Spec List */}
+        {specList?.map((spec: any) => {
+          /**
+           * Map MongoDB _id → frontend id
+           */
+          const id = spec._id;
 
-          <div
-            key={task.id}
+          /**
+           * Display title safely
+           */
+          const title = spec.title || "Untitled Spec";
 
-            onClick={() =>
-              handleTaskClick(task.id)
-            }
-
-            className="
-              text-sm
-              p-2
-              rounded
-              hover:bg-gray-700
-              cursor-pointer
-              truncate
-            "
-          >
-            {task.title}
-          </div>
-
-        ))}
-
+          return (
+            <div
+              key={id}
+              onClick={() => handleTaskClick(id)}
+              className="
+                text-sm
+                p-2
+                rounded
+                hover:bg-gray-700
+                cursor-pointer
+                truncate
+              "
+            >
+              {title}
+            </div>
+          );
+        })}
       </div>
 
-      {/* Profile */}
-      <div className="p-3 border-t border-gray-700">
+      {/* Profile section */}
+      <div
+        className="
+        p-3
+        border-t
+        border-gray-700
+      "
+      >
         Profile
       </div>
-
     </div>
   );
 };
