@@ -8,7 +8,8 @@
 interface FetchServicesProps {
   method: string;
   endpoint: string;
-  data?: Record<string, unknown> | FormData;
+  // eslint-disable-next-line
+  data?: Record<string, any> | FormData;
   headers?: Record<string, string>;
   auth?: boolean; // NEW
 }

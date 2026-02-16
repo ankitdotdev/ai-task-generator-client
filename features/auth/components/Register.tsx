@@ -2,18 +2,16 @@
 
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { Input } from "../Inputs/Inputs";
-import { Button } from "../Buttons/Button";
+import { Input } from "../../../components/Inputs/Inputs";
+import { Button } from "../../../components/Buttons/Button";
 import { useAuth } from "@/zustand/store/auth/authStore";
-import { useRouter } from "next/navigation";
 
-interface LoginProps {
+interface RegisterProps {
   onSwitch: () => void;
 }
 
-export const Login = ({ onSwitch }: LoginProps) => {
-  const { loginApi } = useAuth();
-  const router = useRouter();
+export const Register = ({ onSwitch }: RegisterProps) => {
+  const { registerApi } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,20 +28,25 @@ export const Login = ({ onSwitch }: LoginProps) => {
     try {
       setLoading(true);
 
-      const result = await loginApi(email.trim(), password.trim());
+      const result = await registerApi(
+        email.trim(),
+        password.trim()
+      );
 
       if (result.success) {
         toast.success(result.message);
 
+        // Clear fields
         setEmail("");
         setPassword("");
 
-        router.push("/task");
+        // Redirect to login view
+        onSwitch();
       } else {
         toast.error(result.message);
       }
     } catch (error) {
-      console.error("Login submit error:", error);
+      console.error("Register submit error:", error);
       toast.error("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
@@ -52,7 +55,9 @@ export const Login = ({ onSwitch }: LoginProps) => {
 
   return (
     <div className="w-full max-w-md space-y-6">
-      <h2 className="text-2xl font-semibold text-white">Welcome Back</h2>
+      <h2 className="text-2xl font-semibold text-white">
+        Create Account
+      </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
@@ -66,23 +71,23 @@ export const Login = ({ onSwitch }: LoginProps) => {
         <Input
           label="Password"
           type="password"
-          placeholder="Enter your password"
+          placeholder="Create password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
 
         <Button type="submit" disabled={loading}>
-          {loading ? "Signing in..." : "Sign In"}
+          {loading ? "Creating..." : "Sign Up"}
         </Button>
       </form>
 
       <p className="text-sm text-gray-400">
-        Don’t have an account?{" "}
+        Already have an account?{" "}
         <span
           onClick={onSwitch}
           className="text-[#10a37f] cursor-pointer hover:underline"
         >
-          Register
+          Login
         </span>
       </p>
     </div>
