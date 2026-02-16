@@ -11,51 +11,43 @@ import { TaskGenerating } from "./components/TaskGenerating";
 import { useRouter } from "next/navigation";
 import { useSpecsStore } from "@/zustand/store/specs/specStore";
 import toast from "react-hot-toast";
+
 const TaskContainer = () => {
   const [view, setView] = useState<TaskViewState>("empty");
   const { generateTask } = useSpecsStore();
   const [formData, setFormData] = useState<GenerateSpecInput | null>(null);
   const router = useRouter();
+
   const handleGenerate = async () => {
     if (!formData) return;
 
     try {
-      // show generating UI
       setView("generating");
 
-      // call API
       const result = await generateTask(formData);
 
-      // handle failure
       if (!result.success) {
         setView("review");
-
         toast.error(result.message);
-
         return;
       }
 
-      // get specId from Zustand store
       const specId = result.specId;
-      console.log(result);
+
       if (!specId) {
         setFormData(null);
         toast.error("Failed to retrieve spec ID");
-
         return;
       }
 
-      // reset form
       setFormData(null);
-
-      // navigate to result page
       router.push(`/task/${specId}`);
     } catch (error) {
       setView("review");
-
       toast.error("Something went wrong");
     }
   };
+
   const renderView = () => {
     switch (view) {
       case "empty":
@@ -91,16 +83,8 @@ const TaskContainer = () => {
   };
 
   return (
-    <div
-      className="
-      flex
-      h-screen
-      bg-[#343541]
-      text-white
-    "
-    >
-      <TaskSidebar />
-
+    <div className="flex h-screen overflow-hidden bg-gray-900">
+      <TaskSidebar onCreate={() => setView("create")}   />
       <TaskMainLayout>{renderView()}</TaskMainLayout>
     </div>
   );
